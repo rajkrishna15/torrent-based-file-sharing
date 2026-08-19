@@ -1,0 +1,2 @@
+./peer1 <IP> <PORT> <tracker_info.txt>
+./tracker1 <tracker_info.txt> <1/2>
