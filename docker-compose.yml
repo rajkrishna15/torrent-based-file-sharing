@@ -1,0 +1,99 @@
+services:
+  # Generates the shared dev TLS cert/key once into a bind-mounted volume,
+  # so tracker1/tracker2/peer1/peer2/peer3 - each built as its own
+  # separately-tagged image from this same Dockerfile - all read the exact
+  # same cert/key files from disk instead of each generating (and trusting
+  # only) their own random keypair.
+  certgen:
+    build: .
+    entrypoint: ["/app/generate-dev-cert.sh", "/app/certs"]
+    volumes:
+      - ./certs:/app/certs
+
+  tracker1:
+    build: .
+    command: ["/app/tracker", "/app/tracker_info.txt", "1"]
+    depends_on:
+      certgen:
+        condition: service_completed_successfully
+    volumes:
+      - ./certs:/app/certs:ro
+    networks:
+      demo:
+        ipv4_address: 172.28.0.11
+
+  tracker2:
+    build: .
+    command: ["/app/tracker", "/app/tracker_info.txt", "2"]
+    depends_on:
+      certgen:
+        condition: service_completed_successfully
+    volumes:
+      - ./certs:/app/certs:ro
+    networks:
+      demo:
+        ipv4_address: 172.28.0.12
+
+  peer1:
+    build: .
+    command: ["/app/peer", "172.28.0.21", "20001", "/app/tracker_info.txt"]
+    stdin_open: true
+    tty: true
+    depends_on:
+      certgen:
+        condition: service_completed_successfully
+      tracker1:
+        condition: service_started
+      tracker2:
+        condition: service_started
+    volumes:
+      - ./docker/shared:/shared
+      - ./certs:/app/certs:ro
+    networks:
+      demo:
+        ipv4_address: 172.28.0.21
+
+  peer2:
+    build: .
+    command: ["/app/peer", "172.28.0.22", "20001", "/app/tracker_info.txt"]
+    stdin_open: true
+    tty: true
+    depends_on:
+      certgen:
+        condition: service_completed_successfully
+      tracker1:
+        condition: service_started
+      tracker2:
+        condition: service_started
+    volumes:
+      - ./docker/shared:/shared
+      - ./certs:/app/certs:ro
+    networks:
+      demo:
+        ipv4_address: 172.28.0.22
+
+  peer3:
+    build: .
+    command: ["/app/peer", "172.28.0.23", "20001", "/app/tracker_info.txt"]
+    stdin_open: true
+    tty: true
+    depends_on:
+      certgen:
+        condition: service_completed_successfully
+      tracker1:
+        condition: service_started
+      tracker2:
+        condition: service_started
+    volumes:
+      - ./docker/shared:/shared
+      - ./certs:/app/certs:ro
+    networks:
+      demo:
+        ipv4_address: 172.28.0.23
+
+networks:
+  demo:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/24

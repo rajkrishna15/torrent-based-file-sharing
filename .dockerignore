@@ -1,0 +1,8 @@
+build/
+build-*/
+.git/
+.gitignore
+*.o
+docker/shared/
+certs/*.crt
+certs/*.key
