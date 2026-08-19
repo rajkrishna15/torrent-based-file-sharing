@@ -22,7 +22,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=build /src/build/tracker /app/tracker
 COPY --from=build /src/build/peer /app/peer
 COPY docker/tracker_info.txt /app/tracker_info.txt
-COPY README.md /app/README.md
 
 # Every tracker/peer container in the demo must present/trust the exact
 # same cert (see certs/generate-dev-cert.sh) - generating it independently
