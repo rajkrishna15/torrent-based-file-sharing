@@ -47,3 +47,10 @@ add_executable(peer
 )
 target_include_directories(peer PRIVATE common)
 target_link_libraries(peer PRIVATE OpenSSL::SSL OpenSSL::Crypto Threads::Threads)
+
+enable_testing()
+add_test(
+    NAME integration_test
+    COMMAND sh ${CMAKE_SOURCE_DIR}/tests/integration_test.sh $<TARGET_FILE_DIR:tracker>
+)
+set_tests_properties(integration_test PROPERTIES TIMEOUT 60)
